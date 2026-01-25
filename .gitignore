@@ -1,0 +1,21 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Test files and outputs
+test_*.png
+test_*.txt
+*_output*.png
+*_palette.txt
+*_ascii.png
+
+# Input and output directories
+raw/
+processed/

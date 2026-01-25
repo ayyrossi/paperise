@@ -1,0 +1,333 @@
+# Paperise Configuration File
+# Define transformation profiles for different aesthetic styles
+#
+# Pipeline Design:
+# - The pixelate transformation downscales images for a blocky pixel effect
+# - Use the 'resize' transformation to upscale back to desired dimensions
+# - Keeping images small through the pipeline improves performance
+# - Place 'resize' at the end of your transformation chain for best results
+#
+# Border Color Note:
+# - Border transformation accepts either hex colors (e.g., "#FF5733")
+# - Or palette indices (1-indexed): if quantize uses 8 colors, valid indices are 1-8
+
+profiles:
+  # Basic profile - Simple pixelation
+  default:
+    transformations: [pixelate, resize]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      resize:
+        use_original: true
+
+  # Pixel basic - Just pixelation with custom size
+  pixel_basic:
+    transformations: [pixelate, resize]
+    parameters:
+      pixelate:
+        pixel_size: 16
+      resize:
+        use_original: true
+
+  # Retro profile - 8-bit aesthetic with quantization and dithering
+  retro:
+    transformations: [pixelate, quantize, dither, resize]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      quantize:
+        num_colors: 16
+        output_palette: true
+      dither:
+        dither_type: floyd_steinberg
+        amount: 0.8
+      resize:
+        use_original: true
+
+  # ASCII Art - Generate ASCII art image
+  ascii_art:
+    transformations: [pixelate, quantize, dither, resize]
+    parameters:
+      pixelate:
+        pixel_size: 4
+      quantize:
+        num_colors: 8
+      dither:
+        dither_type: floyd_steinberg
+        amount: 1.0
+        ascii_output: true
+        ascii_width: 120
+        font: monospace
+        font_size: 8
+      resize:
+        use_original: true
+
+  # Custom Palette - Apply specific color scheme
+  custom_palette:
+    transformations: [palette]
+    parameters:
+      palette:
+        palette:
+          - "#FF6B6B"  # Red
+          - "#4ECDC4"  # Teal
+          - "#45B7D1"  # Blue
+          - "#FFA07A"  # Light Salmon
+          - "#98D8C8"  # Mint
+          - "#F7DC6F"  # Yellow
+          - "#BB8FCE"  # Purple
+          - "#85929E"  # Gray
+
+  # Synthwave - Vibrant 80s aesthetic
+  synthwave:
+    transformations: [pixelate, palette, dither, resize]
+    parameters:
+      pixelate:
+        pixel_size: 6
+      palette:
+        palette:
+          - "#FF006E"  # Hot Pink
+          - "#FB5607"  # Orange
+          - "#FFBE0B"  # Yellow
+          - "#8338EC"  # Purple
+          - "#3A86FF"  # Blue
+          - "#06FFA5"  # Neon Green
+          - "#000000"  # Black
+          - "#FFFFFF"  # White
+      dither:
+        dither_type: bayer
+        amount: 0.5
+      resize:
+        use_original: true
+
+  # Gameboy - Classic Gameboy green palette
+  gameboy:
+    transformations: [pixelate, palette, resize]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      palette:
+        palette:
+          - "#0F380F"  # Darkest Green
+          - "#306230"  # Dark Green
+          - "#8BAC0F"  # Light Green
+          - "#9BBC0F"  # Lightest Green
+      resize:
+        use_original: true
+
+  # Monochrome - Black and white with dithering
+  monochrome:
+    transformations: [pixelate, quantize, dither, resize]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      quantize:
+        num_colors: 2
+      dither:
+        dither_type: floyd_steinberg
+        amount: 1.0
+      resize:
+        use_original: true
+
+  # Edge Detect - Simple edge detection filter
+  edge_detect:
+    transformations: [filter]
+    parameters:
+      filter:
+        kernel:
+          - [-1, -1, -1]
+          - [-1,  8, -1]
+          - [-1, -1, -1]
+
+  # Sharpen - Image sharpening filter
+  sharpen:
+    transformations: [filter]
+    parameters:
+      filter:
+        kernel:
+          - [ 0, -1,  0]
+          - [-1,  5, -1]
+          - [ 0, -1,  0]
+
+  # Emboss - 3D emboss effect
+  emboss:
+    transformations: [filter]
+    parameters:
+      filter:
+        kernel:
+          - [-2, -1,  0]
+          - [-1,  1,  1]
+          - [ 0,  1,  2]
+
+  # Retro Neon - Complex multi-stage pipeline
+  retro_neon:
+    transformations: [pixelate, quantize, palette, dither, resize]
+    parameters:
+      pixelate:
+        pixel_size: 10
+      quantize:
+        num_colors: 8
+      palette:
+        palette:
+          - "#FF00FF"  # Magenta
+          - "#00FFFF"  # Cyan
+          - "#FFFF00"  # Yellow
+          - "#FF0000"  # Red
+          - "#00FF00"  # Green
+          - "#0000FF"  # Blue
+          - "#000000"  # Black
+          - "#FFFFFF"  # White
+      dither:
+        dither_type: ordered
+        amount: 0.6
+      resize:
+        use_original: true
+
+  # Pixel Art - High quality pixelation with careful quantization
+  pixel_art:
+    transformations: [pixelate, quantize, resize]
+    parameters:
+      pixelate:
+        pixel_size: 4
+      quantize:
+        num_colors: 32
+        output_palette: true
+      resize:
+        use_original: true
+
+  # Pastel - Soft pastel color palette
+  pastel:
+    transformations: [palette]
+    parameters:
+      palette:
+        palette:
+          - "#FFD1DC"  # Pastel Pink
+          - "#AEC6CF"  # Pastel Blue
+          - "#B39EB5"  # Pastel Purple
+          - "#FFB347"  # Pastel Orange
+          - "#FDFD96"  # Pastel Yellow
+          - "#C1E1C1"  # Pastel Green
+          - "#CFCFC4"  # Pastel Gray
+          - "#FFFFFF"  # White
+
+  # CGA - Classic CGA color palette (16 colors)
+  cga:
+    transformations: [pixelate, palette, resize]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      palette:
+        palette:
+          - "#000000"  # Black
+          - "#0000AA"  # Blue
+          - "#00AA00"  # Green
+          - "#00AAAA"  # Cyan
+          - "#AA0000"  # Red
+          - "#AA00AA"  # Magenta
+          - "#AA5500"  # Brown
+          - "#AAAAAA"  # Light Gray
+          - "#555555"  # Dark Gray
+          - "#5555FF"  # Light Blue
+          - "#55FF55"  # Light Green
+          - "#55FFFF"  # Light Cyan
+          - "#FF5555"  # Light Red
+          - "#FF55FF"  # Light Magenta
+          - "#FFFF55"  # Yellow
+          - "#FFFFFF"  # White
+      resize:
+        use_original: true
+
+  # Vaporwave - Aesthetic vaporwave colors
+  vaporwave:
+    transformations: [pixelate, palette, dither, resize]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      palette:
+        palette:
+          - "#FF71CE"  # Hot Pink
+          - "#01CDFE"  # Bright Blue
+          - "#05FFA1"  # Neon Green
+          - "#B967FF"  # Purple
+          - "#FFFB96"  # Pale Yellow
+          - "#FDA8FF"  # Light Pink
+          - "#011FFD"  # Dark Blue
+          - "#1A1A1A"  # Near Black
+      dither:
+        dither_type: bayer
+        amount: 0.3
+      resize:
+        use_original: true
+
+  # Retro with Border - 8-bit aesthetic with black border for 1920x1080
+  retro_bordered:
+    transformations: [pixelate, quantize, dither, resize, border]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      quantize:
+        num_colors: 16
+        output_palette: true
+      dither:
+        dither_type: floyd_steinberg
+        amount: 0.8
+      resize:
+        use_original: true
+      border:
+        target_width: 1920
+        target_height: 1080
+        color: "#000000"
+
+  # Gameboy Framed - Use darkest color from palette as border
+  # NOTE: Palette indices are 1-indexed (1-4 for this 4-color palette)
+  gameboy_framed:
+    transformations: [pixelate, palette, resize, border]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      palette:
+        palette:
+          - "#0F380F"  # Darkest Green (index 1)
+          - "#306230"  # Dark Green (index 2)
+          - "#8BAC0F"  # Light Green (index 3)
+          - "#9BBC0F"  # Lightest Green (index 4)
+      resize:
+        use_original: true
+      border:
+        target_width: 1920
+        target_height: 1080
+        color: 1  # Use darkest green from palette (1-indexed)
+
+  # Custom Resolution - Resize to specific dimensions
+  wallpaper_1080p:
+    transformations: [pixelate, quantize, resize]
+    parameters:
+      pixelate:
+        pixel_size: 6
+      quantize:
+        num_colors: 24
+      resize:
+        width: 1920
+        height: 1080
+        interpolation: nearest
+
+  # ASCII Wallpaper 1080p - Monochrome with border using palette color
+  # NOTE: color: 1 uses the first color from quantize's 2-color palette (1-indexed)
+  ascii_wallpaper_1080p:
+    transformations: [pixelate, quantize, dither, border]
+    parameters:
+      pixelate:
+        pixel_size: 4
+      quantize:
+        num_colors: 2
+      dither:
+        dither_type: floyd_steinberg
+        amount: 1.0
+        ascii_output: true
+        ascii_width: 120
+        font: monospace
+        font_size: 8
+      border:
+        target_width: 1920
+        target_height: 1080
+        color: 1

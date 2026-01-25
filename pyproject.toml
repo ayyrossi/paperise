@@ -1,0 +1,14 @@
+[project]
+name = "paperise"
+version = "0.1.0"
+description = "Image transformation pipeline for wallpaper generation"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.24.0",
+    "opencv-python>=4.8.0",
+    "scikit-image>=0.21.0",
+    "scipy>=1.11.0",
+    "pillow>=10.0.0",
+    "pyyaml>=6.0",
+    "click>=8.1.0",
+]
