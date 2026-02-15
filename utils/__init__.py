@@ -10,6 +10,7 @@ from utils.dither import DitherTransformation
 from utils.filters import FilterTransformation
 from utils.border import BorderTransformation
 from utils.resize import ResizeTransformation
+from utils.ascii import AsciiTransformation
 
 # Export commonly used classes
 from utils.base import (
@@ -29,4 +30,5 @@ __all__ = [
     'FilterTransformation',
     'BorderTransformation',
     'ResizeTransformation',
+    'AsciiTransformation',
 ]

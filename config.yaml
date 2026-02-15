@@ -11,6 +11,10 @@
 # - Border transformation accepts either hex colors (e.g., "#FF5733")
 # - Or palette indices (1-indexed): if quantize uses 8 colors, valid indices are 1-8
 
+settings:
+  # File extensions recognized as images when processing a directory
+  image_extensions: [.jpg, .jpeg, .png, .bmp, .tiff, .tif, .webp]
+
 profiles:
   # Basic profile - Simple pixelation
   default:
@@ -45,23 +49,19 @@ profiles:
       resize:
         use_original: true
 
-  # ASCII Art - Generate ASCII art image
+  # ASCII Art - Render image as colored ASCII art
   ascii_art:
-    transformations: [pixelate, quantize, dither, resize]
+    transformations: [pixelate, quantize, ascii]
     parameters:
       pixelate:
-        pixel_size: 4
+        pixel_size: 32
       quantize:
-        num_colors: 8
-      dither:
-        dither_type: floyd_steinberg
-        amount: 1.0
-        ascii_output: true
-        ascii_width: 120
-        font: monospace
-        font_size: 8
-      resize:
-        use_original: true
+        num_colors: 16
+      ascii:
+        chars: " .:-=+*#%@"
+        font: DepartureMono Nerd Font
+        font_size: 48
+        background: "#000000"
 
   # Custom Palette - Apply specific color scheme
   custom_palette:
@@ -215,7 +215,7 @@ profiles:
     transformations: [pixelate, palette, resize]
     parameters:
       pixelate:
-        pixel_size: 8
+        pixel_size: 16
       palette:
         palette:
           - "#000000"  # Black
@@ -264,7 +264,7 @@ profiles:
     transformations: [pixelate, quantize, dither, resize, border]
     parameters:
       pixelate:
-        pixel_size: 8
+        pixel_size: 16
       quantize:
         num_colors: 16
         output_palette: true
@@ -311,23 +311,145 @@ profiles:
         height: 1080
         interpolation: nearest
 
-  # ASCII Wallpaper 1080p - Monochrome with border using palette color
-  # NOTE: color: 1 uses the first color from quantize's 2-color palette (1-indexed)
+  # ASCII Wallpaper 1080p - Colored ASCII with border using palette color
+  # NOTE: background: 1 uses the first color from quantize's palette (1-indexed)
   ascii_wallpaper_1080p:
-    transformations: [pixelate, quantize, dither, border]
+    transformations: [pixelate, palette, ascii, border]
     parameters:
       pixelate:
-        pixel_size: 4
-      quantize:
-        num_colors: 2
-      dither:
-        dither_type: floyd_steinberg
-        amount: 1.0
-        ascii_output: true
-        ascii_width: 120
-        font: monospace
-        font_size: 8
+        pixel_size: 16
+      palette:
+        palette:
+          - "#02111b"
+          - "#a80030"
+      ascii:
+        # chars: ".:-=+*#%@"
+        chars: "@ "
+        font: DepartureMono Nerd Font
+        font_size: 16
+        background: 1
+      filter:
+        kernel:
+          - [-2, -1,  0]
+          - [-1,  1,  1]
+          - [ 0,  1,  2]
       border:
         target_width: 1920
         target_height: 1080
         color: 1
+
+  dither_wallpaper_1080p:
+    transformations: [pixelate, dither, palette, resize, filter, border]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      palette:
+        palette:
+          - "#11111b"
+          - "#a80030"
+      dither:
+        dither_type: floyd_steinberg
+        amount: 0.8
+      filter:
+        kernel:
+          - [-4, -1,  0]
+          - [-1,  1,  1]
+          - [ 0,  1,  4]
+      resize:
+        use_original: True
+      border:
+        target_width: 1920
+        target_height: 1080
+        color: "#11111b"
+
+  # Color Space Examples - Demonstrate different clustering spaces
+  quantdither_wallpaper:
+    transformations: [pixelate, palette, ascii, resize, border]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      quantize:
+        num_colors: 32
+        color_space: cielab
+        distance_metric: euclidean
+        output_palette: true
+      dither:
+        dither_type: bayer
+        amount: 1
+      resize:
+        use_original: True
+      palette:
+        palette:
+          - "#11111b"   # Crust (black)
+          - "#f38ba8"   # Red
+          - "#a6e3a1"   # Green
+          - "#f9e2af"   # Yellow
+          - "#89b4fa"   # Blue
+      ascii:
+        chars: ",:.=+*#%@"
+        font: DepartureMono Nerd Font
+        font_size: 32
+        background: 1
+      border:
+        target_width: 1920
+        target_height: 1080
+        color: 1
+
+  quantize_hsv:
+    transformations: [pixelate, quantize, resize]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      quantize:
+        num_colors: 16
+        color_space: hsv
+        distance_metric: euclidean
+        output_palette: true
+      resize:
+        use_original: true
+
+  quantize_cmyk:
+    transformations: [pixelate, quantize, resize]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      quantize:
+        num_colors: 16
+        color_space: cmyk
+        distance_metric: euclidean
+        output_palette: true
+      resize:
+        use_original: true
+
+  # Distance Metric Examples - Demonstrate different distance calculations
+  quantize_manhattan:
+    transformations: [pixelate, quantize, dither, resize]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      quantize:
+        num_colors: 16
+        color_space: cielab
+        distance_metric: manhattan
+        output_palette: true
+      dither:
+        dither_type: floyd_steinberg
+        amount: 0.8
+      resize:
+        use_original: true
+
+  quantize_cosine:
+    transformations: [pixelate, quantize, dither, resize]
+    parameters:
+      pixelate:
+        pixel_size: 8
+      quantize:
+        num_colors: 16
+        color_space: cielab
+        distance_metric: cosine
+        output_palette: true
+      dither:
+        dither_type: floyd_steinberg
+        amount: 0.8
+      resize:
+        use_original: true
