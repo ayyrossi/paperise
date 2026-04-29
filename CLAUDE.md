@@ -154,10 +154,12 @@ For PNG outputs, the following metadata is embedded as text chunks:
   - `char_aspect_ratio` (float): character width/height ratio (default 0.6)
   - Works best on pixelated/downsampled images; place after `pixelate` and before `resize`
 - `filter`: Arbitrary convolution kernels (edge detect, sharpen, emboss, etc.)
-- `resize`: Scale to original dimensions or specific resolution
+- `resize`: Scale to original dimensions or specific resolution; never stretches — crops if aspect ratios differ
   - `use_original` (bool): restore to pre-pipeline dimensions
   - `width` / `height` (int): explicit target size
   - `interpolation`: `nearest`, `linear`, `cubic`, `area`
+  - `crop_shift_x` (float, 0–1, default 0.5): horizontal crop position when width is cropped; 0=left, 0.5=center, 1=right
+  - `crop_shift_y` (float, 0–1, default 0.5): vertical crop position when height is cropped; 0=bottom, 0.5=center, 1=top
 - `border`: Add uniform borders to achieve a target resolution
   - `target_width` / `target_height` (int): final canvas size
   - `color`: hex string or 1-indexed palette reference

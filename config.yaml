@@ -337,29 +337,42 @@ profiles:
         color: 1
 
   wallpaper_1080p:
-    transformations: [pixelate, dither, palette, resize, filter, border]
+    transformations: [pixelate, dither, palette, resize, border]
     parameters:
       pixelate:
-        pixel_size: 2
+        pixel_size: 4
+      dither:
+        dither_type: bayer
+        amount: 0.4
       palette:
         palette:
+          - "#f38ba8"
           - "#11111b"
-          - "#a80030"
-          - "#fab387"
-          - "#a6e3a1"
-          - "#45475a"
-          - "#1e1e2e"
-      dither:
-        dither_type: floyd_steinberg
-        amount: 0.8
-      filter:
-        kernel:
-          - [-4, -1,  0]
-          - [-1,  1,  1]
-          - [ 0,  1,  4]
+          - "#6c7086"
       resize:
-        use_original: True
+        use_original: true
       border:
         target_width: 1920
         target_height: 1080
+        color: "#11111b"
+
+  wallpaper_a53:
+    transformations: [pixelate, dither, palette, resize, border]
+    parameters:
+      pixelate:
+        pixel_size: 2
+      dither:
+        dither_type: floyd_steinberg
+        amount: 0.8
+      palette:
+        palette:
+          - "#11111b"
+          - "#f38ba8"
+      resize:
+        width: 880
+        height: 1900
+        crop_shift_x: 0.85
+      border:
+        target_width: 1080
+        target_height: 2400
         color: "#11111b"
