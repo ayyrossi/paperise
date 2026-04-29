@@ -4,7 +4,7 @@ Resize transformation - scales images to target dimensions.
 
 import cv2
 import numpy as np
-from utils.base import BaseTransformation, TransformationRegistry, TransformationContext
+from utils.base import BaseTransformation, TransformationRegistry, TransformationContext, CTX_ORIGINAL_WIDTH, CTX_ORIGINAL_HEIGHT
 
 
 @TransformationRegistry.register('resize')
@@ -81,14 +81,14 @@ class ResizeTransformation(BaseTransformation):
 
         if use_original:
             # Use original dimensions from context
-            if 'original_width' not in context.metadata or 'original_height' not in context.metadata:
+            if CTX_ORIGINAL_WIDTH not in context.metadata or CTX_ORIGINAL_HEIGHT not in context.metadata:
                 raise ValueError(
                     "Cannot use original dimensions: not available in context. "
                     "This should not happen - please report as a bug."
                 )
 
-            target_width = context.metadata['original_width']
-            target_height = context.metadata['original_height']
+            target_width = context.metadata[CTX_ORIGINAL_WIDTH]
+            target_height = context.metadata[CTX_ORIGINAL_HEIGHT]
         else:
             # Use specified dimensions
             target_width = self.params['width']

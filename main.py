@@ -12,8 +12,14 @@ import numpy as np
 import yaml
 from PIL import Image
 
-from utils.base import TransformationRegistry, TransformationContext
-from utils.io_utils import load_image, save_palette
+from utils.base import (
+    TransformationRegistry,
+    TransformationContext,
+    CTX_ORIGINAL_WIDTH,
+    CTX_ORIGINAL_HEIGHT,
+    CTX_VERBOSE,
+)
+from utils.io_utils import load_image
 from utils.metadata import build_pnginfo, read_metadata, save_profile_to_config
 
 
@@ -44,8 +50,11 @@ def _process_single_image(
     parameters: dict,
     active_profile: str,
     verbose: bool,
+    font_fallback_paths: list = None,
 ) -> None:
     """Load, transform, and save a single image."""
+    if font_fallback_paths is None:
+        font_fallback_paths = []
     if verbose:
         click.echo(f"Loading image: {input_path}")
 
@@ -55,8 +64,9 @@ def _process_single_image(
         click.echo(f"Image size: {image.shape[1]}x{image.shape[0]}")
 
     context = TransformationContext()
-    context.metadata["original_width"] = image.shape[1]
-    context.metadata["original_height"] = image.shape[0]
+    context.metadata[CTX_ORIGINAL_WIDTH] = image.shape[1]
+    context.metadata[CTX_ORIGINAL_HEIGHT] = image.shape[0]
+    context.metadata[CTX_VERBOSE] = verbose
 
     for trans_name in transformations:
         if verbose:
@@ -72,6 +82,8 @@ def _process_single_image(
             sys.exit(1)
 
         trans_params = parameters.get(trans_name, {})
+        if trans_name == 'ascii' and 'font_fallback_paths' not in trans_params:
+            trans_params = {**trans_params, 'font_fallback_paths': font_fallback_paths}
         transformation = trans_class(trans_params)
         transformation.validate_params()
         image = transformation.apply(image, context)
@@ -84,18 +96,9 @@ def _process_single_image(
 
     pnginfo = None
     if Path(output_path).suffix.lower() == ".png":
-        pnginfo = build_pnginfo(active_profile, transformations, parameters)
+        pnginfo = build_pnginfo(active_profile, transformations, parameters, context.palette or None)
 
     _save_image(image, output_path, pnginfo=pnginfo)
-
-    output_dir = Path(output_path).parent
-    output_stem = Path(output_path).stem
-
-    if context.palette and context.metadata.get("output_palette_file", False):
-        palette_path = output_dir / f"{output_stem}_palette.txt"
-        if verbose:
-            click.echo(f"Saving palette: {palette_path}")
-        save_palette(context.palette, str(palette_path))
 
     click.echo(f"✓ Successfully processed image: {output_path}")
 
@@ -205,12 +208,14 @@ def main(
         with open(config, "r") as f:
             config_data = yaml.safe_load(f)
 
+        settings = config_data.get("settings", {})
         image_extensions = set(
-            config_data.get("settings", {}).get(
+            settings.get(
                 "image_extensions",
                 [".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif", ".webp"],
             )
         )
+        font_fallback_paths = settings.get("font_fallback_paths", [])
 
         # ── Resolve pipeline source ───────────────────────────────────────────
         if from_image:
@@ -284,6 +289,7 @@ def main(
                         parameters,
                         active_profile,
                         verbose,
+                        font_fallback_paths,
                     )
                 except Exception as e:
                     click.echo(f"Error processing '{img_file.name}': {e}", err=True)
@@ -308,6 +314,7 @@ def main(
                 parameters,
                 active_profile,
                 verbose,
+                font_fallback_paths,
             )
 
     except click.UsageError:

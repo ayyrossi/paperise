@@ -14,6 +14,12 @@
 settings:
   # File extensions recognized as images when processing a directory
   image_extensions: [.jpg, .jpeg, .png, .bmp, .tiff, .tif, .webp]
+  font_fallback_paths:
+    - "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
+    - "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf"
+    - "/usr/share/fonts/truetype/liberation2/LiberationMono-Regular.ttf"
+    - "/System/Library/Fonts/Courier.dfont"
+    - "C:\\Windows\\Fonts\\consola.ttf"
 
 profiles:
   # Basic profile - Simple pixelation
@@ -42,7 +48,6 @@ profiles:
         pixel_size: 8
       quantize:
         num_colors: 16
-        output_palette: true
       dither:
         dither_type: floyd_steinberg
         amount: 0.8
@@ -191,7 +196,6 @@ profiles:
         pixel_size: 4
       quantize:
         num_colors: 32
-        output_palette: true
       resize:
         use_original: true
 
@@ -267,7 +271,6 @@ profiles:
         pixel_size: 16
       quantize:
         num_colors: 16
-        output_palette: true
       dither:
         dither_type: floyd_steinberg
         amount: 0.8
@@ -299,7 +302,7 @@ profiles:
         color: 1  # Use darkest green from palette (1-indexed)
 
   # Custom Resolution - Resize to specific dimensions
-  wallpaper_1080p:
+  wallpaper_1080p_simple:
     transformations: [pixelate, quantize, resize]
     parameters:
       pixelate:
@@ -328,25 +331,24 @@ profiles:
         font: DepartureMono Nerd Font
         font_size: 16
         background: 1
-      filter:
-        kernel:
-          - [-2, -1,  0]
-          - [-1,  1,  1]
-          - [ 0,  1,  2]
       border:
         target_width: 1920
         target_height: 1080
         color: 1
 
-  dither_wallpaper_1080p:
+  wallpaper_1080p:
     transformations: [pixelate, dither, palette, resize, filter, border]
     parameters:
       pixelate:
-        pixel_size: 8
+        pixel_size: 2
       palette:
         palette:
           - "#11111b"
           - "#a80030"
+          - "#fab387"
+          - "#a6e3a1"
+          - "#45475a"
+          - "#1e1e2e"
       dither:
         dither_type: floyd_steinberg
         amount: 0.8
@@ -361,95 +363,3 @@ profiles:
         target_width: 1920
         target_height: 1080
         color: "#11111b"
-
-  # Color Space Examples - Demonstrate different clustering spaces
-  quantdither_wallpaper:
-    transformations: [pixelate, palette, ascii, resize, border]
-    parameters:
-      pixelate:
-        pixel_size: 8
-      quantize:
-        num_colors: 32
-        color_space: cielab
-        distance_metric: euclidean
-        output_palette: true
-      dither:
-        dither_type: bayer
-        amount: 1
-      resize:
-        use_original: True
-      palette:
-        palette:
-          - "#11111b"   # Crust (black)
-          - "#f38ba8"   # Red
-          - "#a6e3a1"   # Green
-          - "#f9e2af"   # Yellow
-          - "#89b4fa"   # Blue
-      ascii:
-        chars: ",:.=+*#%@"
-        font: DepartureMono Nerd Font
-        font_size: 32
-        background: 1
-      border:
-        target_width: 1920
-        target_height: 1080
-        color: 1
-
-  quantize_hsv:
-    transformations: [pixelate, quantize, resize]
-    parameters:
-      pixelate:
-        pixel_size: 8
-      quantize:
-        num_colors: 16
-        color_space: hsv
-        distance_metric: euclidean
-        output_palette: true
-      resize:
-        use_original: true
-
-  quantize_cmyk:
-    transformations: [pixelate, quantize, resize]
-    parameters:
-      pixelate:
-        pixel_size: 8
-      quantize:
-        num_colors: 16
-        color_space: cmyk
-        distance_metric: euclidean
-        output_palette: true
-      resize:
-        use_original: true
-
-  # Distance Metric Examples - Demonstrate different distance calculations
-  quantize_manhattan:
-    transformations: [pixelate, quantize, dither, resize]
-    parameters:
-      pixelate:
-        pixel_size: 8
-      quantize:
-        num_colors: 16
-        color_space: cielab
-        distance_metric: manhattan
-        output_palette: true
-      dither:
-        dither_type: floyd_steinberg
-        amount: 0.8
-      resize:
-        use_original: true
-
-  quantize_cosine:
-    transformations: [pixelate, quantize, dither, resize]
-    parameters:
-      pixelate:
-        pixel_size: 8
-      quantize:
-        num_colors: 16
-        color_space: cielab
-        distance_metric: cosine
-        output_palette: true
-      dither:
-        dither_type: floyd_steinberg
-        amount: 0.8
-      resize:
-        use_original: true

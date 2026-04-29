@@ -1,26 +1,21 @@
 """
-Dithering transformation with ASCII art output support.
+Dithering transformation.
 """
 
 import cv2
 import numpy as np
 from pathlib import Path
 from utils.base import BaseTransformation, TransformationRegistry, TransformationContext
-from utils.io_utils import image_to_ascii, generate_ascii_image
 
 
 @TransformationRegistry.register('dither')
 class DitherTransformation(BaseTransformation):
     """
-    Apply dithering to image with optional ASCII art output.
+    Apply dithering to image.
 
     Parameters:
         dither_type (str): Type of dithering - 'floyd_steinberg', 'ordered', or 'bayer'
         amount (float): Dithering strength (0.0 to 1.0, default: 1.0)
-        ascii_output (bool): Generate ASCII art image (default: false)
-        ascii_width (int): Width of ASCII art in characters (default: 100)
-        font (str): Font name or path for ASCII rendering (default: 'monospace')
-        font_size (int): Font size for ASCII rendering (default: 10)
     """
 
     # Bayer matrix for ordered dithering
@@ -65,7 +60,6 @@ class DitherTransformation(BaseTransformation):
         """
         dither_type = self.params.get('dither_type', 'floyd_steinberg')
         amount = self.params.get('amount', 1.0)
-        ascii_output = self.params.get('ascii_output', False)
 
         # Handle alpha channel
         has_alpha = len(image.shape) == 3 and image.shape[2] == 4
@@ -86,22 +80,6 @@ class DitherTransformation(BaseTransformation):
         # Restore alpha channel
         if has_alpha:
             dithered = np.dstack([dithered, alpha_channel])
-
-        # Generate ASCII output if requested
-        if ascii_output:
-            ascii_width = self.params.get('ascii_width', 100)
-            font = self.params.get('font', 'monospace')
-            font_size = self.params.get('font_size', 10)
-
-            # Convert to ASCII
-            ascii_text = image_to_ascii(dithered, width=ascii_width)
-            context.ascii_data = ascii_text
-
-            # Generate ASCII image
-            # We'll save it in the main.py using output path
-            context.metadata['ascii_output'] = True
-            context.metadata['ascii_font'] = font
-            context.metadata['ascii_font_size'] = font_size
 
         return dithered
 

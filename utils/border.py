@@ -5,7 +5,7 @@ Border transformation - adds uniform borders to achieve target resolution.
 import cv2
 import numpy as np
 from utils.base import BaseTransformation, TransformationRegistry, TransformationContext
-from utils.io_utils import hex_to_bgr
+from utils.io_utils import resolve_color, validate_color_param
 
 
 @TransformationRegistry.register('border')
@@ -50,21 +50,7 @@ class BorderTransformation(BaseTransformation):
         if target_height < 1:
             raise ValueError("target_height must be at least 1")
 
-        # Validate color parameter
-        if isinstance(color, int):
-            if color < 1:
-                raise ValueError("palette color index must be at least 1 (1-indexed)")
-        elif isinstance(color, str):
-            # Validate hex color
-            try:
-                hex_to_bgr(color)
-            except ValueError as e:
-                raise ValueError(f"invalid hex color: {color}")
-        else:
-            raise ValueError(
-                "color must be either a hex string (e.g., '#FF5733') or "
-                "an integer (1-indexed palette reference)"
-            )
+        validate_color_param(color, 'color')
 
     def apply(self, image: np.ndarray, context: TransformationContext) -> np.ndarray:
         """
@@ -92,27 +78,7 @@ class BorderTransformation(BaseTransformation):
                 f"larger than current image size ({current_width}x{current_height})"
             )
 
-        # Determine border color
-        if isinstance(color_param, int):
-            # Use palette color (1-indexed)
-            if not context.palette:
-                raise ValueError(
-                    "Cannot use palette color index: no palette available. "
-                    "Ensure quantize or palette transformation runs before border."
-                )
-
-            palette_idx = color_param - 1  # Convert to 0-indexed
-
-            if palette_idx < 0 or palette_idx >= len(context.palette):
-                raise ValueError(
-                    f"Palette color index {color_param} out of range. "
-                    f"Palette has {len(context.palette)} colors (valid indices: 1-{len(context.palette)})"
-                )
-
-            border_color = context.palette[palette_idx]
-        else:
-            # Use hex color
-            border_color = hex_to_bgr(color_param)
+        border_color = resolve_color(color_param, context.palette, 'border')
 
         # Calculate border sizes (uniform on all sides, centered)
         total_border_width = target_width - current_width

@@ -133,7 +133,4 @@ class PaletteTransformation(BaseTransformation):
         # Save final palette to context
         context.palette = target_palette.tolist()
 
-        # Palette transformation always outputs palette file
-        context.metadata['output_palette_file'] = True
-
         return result.astype(np.uint8)

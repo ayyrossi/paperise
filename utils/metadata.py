@@ -10,7 +10,7 @@ import yaml
 from PIL import Image, PngImagePlugin
 
 
-def build_pnginfo(profile_name: str, pipeline: list, params: dict) -> PngImagePlugin.PngInfo:
+def build_pnginfo(profile_name: str, pipeline: list, params: dict, palette: list = None) -> PngImagePlugin.PngInfo:
     """
     Build a PngInfo object with paperise pipeline metadata as text chunks.
 
@@ -18,6 +18,7 @@ def build_pnginfo(profile_name: str, pipeline: list, params: dict) -> PngImagePl
         profile_name: Name of the profile used
         pipeline: Ordered list of transformation names
         params: Dictionary mapping transformation names to parameter dicts
+        palette: Optional list of BGR color tuples from quantization (stored as RGB hex strings)
 
     Returns:
         PngInfo object ready to pass to image.save(path, pnginfo=pnginfo)
@@ -27,6 +28,9 @@ def build_pnginfo(profile_name: str, pipeline: list, params: dict) -> PngImagePl
     pnginfo.add_text("paperise:pipeline", json.dumps(pipeline))
     pnginfo.add_text("paperise:params", json.dumps(params))
     pnginfo.add_text("paperise:timestamp", datetime.now(timezone.utc).isoformat())
+    if palette:
+        hex_palette = [f"#{r:02x}{g:02x}{b:02x}" for b, g, r in palette]
+        pnginfo.add_text("paperise:palette", json.dumps(hex_palette))
     return pnginfo
 
 

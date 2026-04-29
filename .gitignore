@@ -14,7 +14,6 @@ test_*.png
 test_*.txt
 *_output*.png
 *_palette.txt
-*_ascii.png
 
 # Input and output directories
 raw/

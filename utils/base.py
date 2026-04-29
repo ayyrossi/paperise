@@ -7,15 +7,19 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Type
 import numpy as np
 
+# Context metadata key constants
+CTX_ORIGINAL_WIDTH = "original_width"
+CTX_ORIGINAL_HEIGHT = "original_height"
+CTX_VERBOSE = "verbose"
+
 
 @dataclass
 class TransformationContext:
     """
     Shared context passed through the transformation pipeline.
-    Used for storing auxiliary outputs like palettes, ASCII data, etc.
+    Used for storing auxiliary outputs like palettes and metadata.
     """
     palette: list = field(default_factory=list)
-    ascii_data: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 

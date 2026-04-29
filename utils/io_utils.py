@@ -5,8 +5,6 @@ Image I/O utilities for loading, saving, and auxiliary outputs.
 import cv2
 import numpy as np
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
-from typing import Optional
 
 
 def load_image(image_path: str) -> np.ndarray:
@@ -33,41 +31,6 @@ def load_image(image_path: str) -> np.ndarray:
 
     return image
 
-
-def save_image(image: np.ndarray, output_path: str) -> None:
-    """
-    Save an image to file.
-
-    Args:
-        image: Image as numpy array
-        output_path: Path to save image
-
-    Raises:
-        ValueError: If image cannot be saved
-    """
-    success = cv2.imwrite(output_path, image)
-    if not success:
-        raise ValueError(f"Could not save image to: {output_path}")
-
-
-def save_palette(palette: list, output_path: str) -> None:
-    """
-    Save color palette as hex colors to text file.
-
-    Args:
-        palette: List of BGR color tuples
-        output_path: Path to save palette file
-    """
-    with open(output_path, 'w') as f:
-        for color in palette:
-            # Convert BGR to RGB for hex representation
-            if len(color) == 3:
-                b, g, r = color
-            else:
-                # Handle BGRA
-                b, g, r = color[:3]
-            hex_color = f"#{int(r):02x}{int(g):02x}{int(b):02x}"
-            f.write(hex_color + "\n")
 
 
 def hex_to_bgr(hex_color: str) -> tuple:
@@ -98,118 +61,34 @@ def hex_to_bgr(hex_color: str) -> tuple:
         raise ValueError(f"Invalid hex color: {hex_color}")
 
 
-def generate_ascii_image(
-    ascii_text: str,
-    output_path: str,
-    font_name: str = "monospace",
-    font_size: int = 10,
-    bg_color: tuple = (0, 0, 0),
-    fg_color: tuple = (255, 255, 255)
-) -> None:
-    """
-    Render ASCII text to an image file.
-
-    Args:
-        ascii_text: ASCII art string (with newlines)
-        output_path: Path to save ASCII image
-        font_name: Font name or path to TTF file
-        font_size: Font size in points
-        bg_color: Background color (RGB)
-        fg_color: Foreground color (RGB)
-    """
-    # Split text into lines
-    lines = ascii_text.split('\n')
-    if not lines:
-        return
-
-    # Try to load font
-    try:
-        # Try as path first
-        if Path(font_name).exists():
-            font = ImageFont.truetype(font_name, font_size)
-        else:
-            # Try common monospace fonts
-            font_paths = [
-                f"/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
-                f"/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
-                f"/System/Library/Fonts/Courier.dfont",
-                f"C:\\Windows\\Fonts\\consola.ttf",
-            ]
-            font = None
-            for path in font_paths:
-                if Path(path).exists():
-                    font = ImageFont.truetype(path, font_size)
-                    break
-            if font is None:
-                font = ImageFont.load_default()
-    except Exception:
-        font = ImageFont.load_default()
-
-    # Calculate image size
-    # Use a temporary draw to measure text
-    temp_img = Image.new('RGB', (1, 1))
-    temp_draw = ImageDraw.Draw(temp_img)
-
-    # Get dimensions of a single character
-    bbox = temp_draw.textbbox((0, 0), 'M', font=font)
-    char_width = bbox[2] - bbox[0]
-    char_height = bbox[3] - bbox[1]
-
-    # Calculate image dimensions
-    max_line_length = max(len(line) for line in lines) if lines else 0
-    width = max_line_length * char_width + 20  # Add padding
-    height = len(lines) * char_height + 20
-
-    # Create image
-    image = Image.new('RGB', (width, height), bg_color)
-    draw = ImageDraw.Draw(image)
-
-    # Draw text
-    y = 10
-    for line in lines:
-        draw.text((10, y), line, fill=fg_color, font=font)
-        y += char_height
-
-    # Save image
-    image.save(output_path)
-
-
-def image_to_ascii(
-    image: np.ndarray,
-    chars: str = " .:-=+*#%@",
-    width: Optional[int] = None
-) -> str:
-    """
-    Convert image to ASCII art string.
-
-    Args:
-        image: Input image (BGR or grayscale)
-        chars: Characters to use for ASCII art (darkest to brightest)
-        width: Target width in characters (maintains aspect ratio)
-
-    Returns:
-        ASCII art string
-    """
-    # Convert to grayscale if needed
-    if len(image.shape) == 3:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+def validate_color_param(value, param_name: str = "color") -> None:
+    """Validate that a color param is a valid hex string or positive int (palette index)."""
+    if isinstance(value, int):
+        if value < 1:
+            raise ValueError(f"{param_name}: palette index must be >= 1 (1-indexed)")
+    elif isinstance(value, str):
+        try:
+            hex_to_bgr(value)
+        except ValueError:
+            raise ValueError(f"{param_name}: invalid hex color '{value}'")
     else:
-        gray = image
+        raise ValueError(f"{param_name} must be a hex string or int (palette index)")
 
-    # Resize if width specified
-    if width is not None:
-        aspect_ratio = gray.shape[0] / gray.shape[1]
-        height = int(width * aspect_ratio * 0.55)  # Adjust for character aspect ratio
-        gray = cv2.resize(gray, (width, height), interpolation=cv2.INTER_AREA)
 
-    # Convert to ASCII
-    ascii_chars = []
-    for row in gray:
-        line = ""
-        for pixel in row:
-            # Map pixel value (0-255) to character index
-            char_idx = int(pixel / 255 * (len(chars) - 1))
-            line += chars[char_idx]
-        ascii_chars.append(line)
-
-    return '\n'.join(ascii_chars)
+def resolve_color(color_param, palette: list, context_name: str = "transformation") -> tuple:
+    """Resolve hex string or 1-indexed palette reference to a BGR tuple."""
+    if isinstance(color_param, int):
+        if not palette:
+            raise ValueError(
+                f"Cannot use palette color index: no palette available. "
+                f"Ensure a quantize or palette transformation runs before {context_name}."
+            )
+        palette_idx = color_param - 1
+        if palette_idx < 0 or palette_idx >= len(palette):
+            raise ValueError(
+                f"Palette color index {color_param} out of range. "
+                f"Palette has {len(palette)} colors (valid: 1-{len(palette)})"
+            )
+        return tuple(palette[palette_idx])
+    else:
+        return hex_to_bgr(color_param)
